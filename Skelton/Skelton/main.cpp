@@ -82,10 +82,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ChangeWindowMode(true);
 	DxLib_Init();
 	SetDrawScreen(DX_SCREEN_BACK);
+
+	//背景用
+	int bgH[4];
+	LoadDivGraph(L"img/bganim.png", 4, 4, 1, 256, 192, bgH);
+
 	int groundH = LoadGraph(L"img/ground.png");
 	assert(groundH >= 0);
 	int bgAssetH = LoadGraph(L"img/Assets.png");
 	assert(bgAssetH >= 0);
+	int arrowH = LoadGraph(L"img/arrow.png");
+	assert(arrowH >= 0);
 
 	constexpr size_t picture_num = 5;
 	int graphH[picture_num] = {};
@@ -114,9 +121,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool isReverse = false;
 	int lastMouseInput = 0;
+	int bgIdx = 0;
 	while (ProcessMessage() != -1) {
 		ClearDrawScreen();
 		GetHitKeyStateAll(keystate.data());
+
+		//背景
+		DrawExtendGraph(0, 0, 640, 480, bgH[bgIdx / 8], false);
+		bgIdx = (bgIdx + 1) % 32;
 
 		auto currentMouseInput=GetMouseInput();
 		if ((currentMouseInput & MOUSE_INPUT_LEFT) &&
@@ -130,16 +142,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-		constexpr size_t block_size = 32;
-		auto count = 720 / block_size;
+		constexpr size_t block_size = 16;
+		constexpr size_t width = 1000;
+		auto count = width / block_size;
+		float weight = (float)800 / (float)width;
 		constexpr int base_y = 240;
-		constexpr float sin_amp = 50.0f;
+		constexpr float sin_amp = block_size*2;
 		int x = 0;
 		int y = base_y+sin_amp *
 			sin(DegreeToRadian((float)(frameForAngle)));
 		Position2 currentPos(x, y);
 		//Vector2 lastDelta90Vec = Vector2::Zero();//直前のベクトル
 		Position2 lastDelta90Vectors[2] = { Vector2::Zero(),Vector2::Zero() };
+		Position2 lastPos = {0.0f,0.0f};
 		for (int i = 1; i <= count; ++i) {
 			int nextX = i * block_size;
 			int nextY = sin_amp * 
@@ -199,17 +214,39 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//auto middlePosL = currentPos + middleVec1;
 			//auto middlePosR = nextPos + middleVec0;
 
-			auto middlePosL = currentPos + middleVecL;
-			auto middlePosR = nextPos + middleVecR;
+			if (lastPos == Vector2(0.0f, 0.0f)) {
+				auto middlePosL = currentPos + middleVecL*2;
+				auto middlePosR = nextPos + middleVecR*2;
+				DrawRectModiGraph(
+					currentPos.x, currentPos.y, //左上
+					nextPos.x, nextPos.y, //右上
+					middlePosR.x, middlePosR.y, //右下
+					middlePosL.x, middlePosL.y, //左下
+					i* block_size, 0,//元画像の左上
+					block_size, 64,//元画像の切り抜き幅、切り抜き高さ
+					arrowH, true);
+			}
+			else {
+				auto middlePosL = lastPos + middleVecL*2;
+				auto middlePosR = currentPos + middleVecR*2;
+				DrawRectModiGraph(
+					lastPos.x, lastPos.y, //左上
+					currentPos.x, currentPos.y, //右上
+					middlePosR.x, middlePosR.y, //右下
+					middlePosL.x, middlePosL.y, //左下
+					i*block_size* weight, 0,//元画像の左上
+					block_size, 64,//元画像の切り抜き幅、切り抜き高さ
+					arrowH, true);
+			}
 
-			DrawRectModiGraph(
-				currentPos.x, currentPos.y, //左上
-				nextPos.x, nextPos.y, //右上
-				middlePosR.x, middlePosR.y , //右下
-				middlePosL.x, middlePosL.y, //左下
-				48,0,//元画像の左上
-				16,16,//元画像の切り抜き幅、切り抜き高さ
-				bgAssetH,true);
+			//DrawLineAA(//右辺
+			//	currentPos.x, currentPos.y, //始点
+			//	middlePosR.x, middlePosR.y, //終点
+			//	0xffffff, 2.0f);
+			//DrawLineAA(//左辺
+			//	lastPos.x, lastPos.y, //始点
+			//	middlePosL.x, middlePosL.y, //終点
+			//	0xffffff, 2.0f);
 
 			//DrawLineAA(//中間
 			//	currentPos.x, currentPos.y, //始点
@@ -239,7 +276,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//	x, y, //終点
 			//	0xffffff, 2.0f);
 
-
+			lastPos = currentPos;
 			currentPos = nextPos;
 		}
 			//DrawModiGraph(x, y, //左上
