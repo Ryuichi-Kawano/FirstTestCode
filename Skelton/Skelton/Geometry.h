@@ -37,9 +37,10 @@ struct Vector2 {
 	/// </summary>
 	void Rotate90();
 	Vector2 Rotated90()const;
-	static const Vector2 Zero() {
-		return { 0.0f,0.0f };
-	}
+	//static const Vector2 Zero() {
+	//	return { 0.0f,0.0f };
+	//}
+	static const Vector2 ZERO;
 };
 using Position2 = Vector2;
 

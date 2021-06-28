@@ -2,6 +2,10 @@
 #include<cmath>
 #include<algorithm>
 
+
+
+const Vector2 Vector2::ZERO = { 0.0f,0.0f };
+
 void 
 Vector2::operator+=(const Vector2& val) {
 	x += val.x;

@@ -91,7 +91,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(groundH >= 0);
 	int bgAssetH = LoadGraph(L"img/Assets.png");
 	assert(bgAssetH >= 0);
-	int arrowH = LoadGraph(L"img/arrow.png");
+	int arrowH = LoadGraph(L"img/arrow2.png");
 	assert(arrowH >= 0);
 
 	constexpr size_t picture_num = 5;
@@ -153,7 +153,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			sin(DegreeToRadian((float)(frameForAngle)));
 		Position2 currentPos(x, y);
 		//Vector2 lastDelta90Vec = Vector2::Zero();//直前のベクトル
-		Position2 lastDelta90Vectors[2] = { Vector2::Zero(),Vector2::Zero() };
+		Position2 lastDelta90Vectors[2] = { Vector2::ZERO,Vector2::ZERO };
 		Position2 lastPos = {0.0f,0.0f};
 		for (int i = 1; i <= count; ++i) {
 			int nextX = i * block_size;
@@ -165,12 +165,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			auto middleVec0 = deltaVec;
 			auto middleVecR = deltaVec.Rotated90();
-			if (!(lastDelta90Vectors[0] == Vector2::Zero())) {
+			if (!(lastDelta90Vectors[0] == Vector2::ZERO)) {
 				middleVecR = (middleVecR + lastDelta90Vectors[0]).Normalized() * block_size;
 			}
 			auto middleVecL = lastDelta90Vectors[0];
 			
-			if (!(lastDelta90Vectors[1] == Vector2::Zero())) {
+			if (!(lastDelta90Vectors[1] == Vector2::ZERO)) {
 				middleVecL = (middleVecL + lastDelta90Vectors[1]).Normalized() * block_size;
 			}
 			lastDelta90Vectors[1]= lastDelta90Vectors[0];
